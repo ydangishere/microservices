@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-package-lock.json
+# package-lock.json: giữ trong repo để Docker build (npm ci) chạy được trên Render
 
 # Build output
 dist/
