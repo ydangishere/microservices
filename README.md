@@ -2,6 +2,44 @@
 
 A **fundamental yet complete** microservices system with Auth Service, People Service, and Case Service integrated with Kafka, Redis, Elasticsearch, and JWT authentication.
 
+---
+
+## 🧪 How to test & use (TL;DR)
+
+### Option A – Chỉ cần test UI (services đã chạy sẵn)
+
+1. Mở link: **http://127.0.0.1:3000/admin-ui/index.html**
+2. **Register** (email + password) → **Login**
+3. Thử: **Create Person** → **Create Case** → **Search Cases**
+
+### Option B – Chạy full từ đầu (local)
+
+1. **Clone & install**
+   ```bash
+   git clone https://github.com/ydangishere/microservices.git
+   cd microservices
+   npm install
+   npm run build --workspace=shared
+   ```
+2. **Infrastructure** (Docker): `npm run docker:up`
+3. **3 services** (mở 3 terminal):
+   - `cd services/auth-service && npx ts-node src/index.ts`
+   - `cd services/people-service && npx ts-node src/index.ts`
+   - `cd services/case-service && npx ts-node src/index.ts`
+4. **Mở UI**: http://127.0.0.1:3000/admin-ui/index.html (hoặc double-click `admin-ui/index.html`)
+5. **Register** → **Login** → tạo People, Cases, Search.
+
+### Link để mở UI
+
+| Môi trường | Link |
+|------------|------|
+| **Local** | http://127.0.0.1:3000/admin-ui/index.html |
+| **Render (sau khi deploy)** | https://&lt;your-admin-ui-service&gt;.onrender.com |
+
+Chi tiết từng bước nằm ở phần [Getting Started](#-getting-started) và [Demo Validation](#-demo-validation-ui--microservices) bên dưới.
+
+---
+
 ## 📋 System Architecture
 
 ```
@@ -80,17 +118,21 @@ A **fundamental yet complete** microservices system with Auth Service, People Se
 
 ## 🌐 Demo Validation (UI + Microservices)
 
-Use these links depending on environment:
+### Link để test / dùng
 
-- **Local UI Test Link**: `http://127.0.0.1:3000/admin-ui/index.html`
-- **Render UI Link (production)**: `https://<your-admin-ui-service>.onrender.com`
+- **Local**: [http://127.0.0.1:3000/admin-ui/index.html](http://127.0.0.1:3000/admin-ui/index.html)
+- **Render (sau khi deploy)**: `https://<your-admin-ui-service>.onrender.com`
 
-This link is used to validate two things in one flow:
+### Cách dùng UI (từng bước)
 
-1. **UI behavior**: register, login, create people, create/search cases.
-2. **Microservices architecture**: Auth + People + Case services, plus Redis/Kafka/Elasticsearch integration.
+1. Mở link UI ở trên.
+2. **Register**: nhập email, password, tên → bấm **REGISTER**.
+3. **Login**: cùng email/password → bấm **LOGIN**.
+4. **People**: Create New Person → Refresh List (xem cache: mở F12 Console).
+5. **Cases**: Create New Case → Search Cases (test Elasticsearch).
+6. **Health**: bấm **Check All Services** để xem Auth / People / Case có sống không.
 
-In short: open the UI link to test the interface quickly **or** run an end-to-end verification of the microservices architecture.
+Dùng link UI để test giao diện **hoặc** kiểm chứng end-to-end kiến trúc microservice (Auth, People, Case, Redis, Kafka, Elasticsearch).
 
 ### Render URL mapping (required before go-live)
 
