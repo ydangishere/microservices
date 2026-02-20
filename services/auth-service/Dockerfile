@@ -3,8 +3,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy workspace files
-COPY package*.json ./
+# Copy workspace files (root tsconfig needed for shared build)
+COPY package*.json tsconfig.json ./
 COPY shared ./shared
 COPY services/auth-service ./services/auth-service
 
