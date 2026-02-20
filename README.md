@@ -6,37 +6,64 @@ A **fundamental yet complete** microservices system with Auth Service, People Se
 
 ## 🧪 How to test & use (TL;DR)
 
-### Option A – Chỉ cần test UI (services đã chạy sẵn)
+### Các bước chạy local (đủ để xem Auth + People)
 
-1. Mở link: **http://127.0.0.1:3000/admin-ui/index.html**
-2. **Register** (email + password) → **Login**
-3. Thử: **Create Person** → **Create Case** → **Search Cases**
-
-### Option B – Chạy full từ đầu (local)
-
-1. **Clone & install**
+1. **Clone & cài đặt**
    ```bash
    git clone https://github.com/ydangishere/microservices.git
    cd microservices
    npm install
-   npm run build --workspace=shared
    ```
-2. **Infrastructure** (Docker): `npm run docker:up`
-3. **3 services** (mở 3 terminal):
-   - `cd services/auth-service && npx ts-node src/index.ts`
-   - `cd services/people-service && npx ts-node src/index.ts`
-   - `cd services/case-service && npx ts-node src/index.ts`
-4. **Mở UI**: http://127.0.0.1:3000/admin-ui/index.html (hoặc double-click `admin-ui/index.html`)
-5. **Register** → **Login** → tạo People, Cases, Search.
+2. **Bật PostgreSQL + Redis** (Docker, từ thư mục gốc repo):
+   ```bash
+   npm run docker:up
+   ```
+   (Chỉ cần Postgres + Redis; lần đầu có thể chạy: `docker-compose -f infrastructure/docker-compose.yml up -d postgres redis`)
+3. **Chạy Auth** (terminal 1, từ thư mục gốc):
+   ```bash
+   npm run dev:auth
+   ```
+   Đợi thấy: `Auth Service running on port 3001`.
+4. **Chạy People** (terminal 2, từ thư mục gốc):
+   ```bash
+   npm run dev:people
+   ```
+   Đợi thấy: `People Service running on port 3012`.
+5. **Mở link** (xem bảng bên dưới).
 
-### Link để mở UI
+### Link local cho user (sau khi chạy các bước trên)
 
-| Môi trường | Link |
-|------------|------|
-| **Local** | http://127.0.0.1:3000/admin-ui/index.html |
-| **Render (sau khi deploy)** | https://&lt;your-admin-ui-service&gt;.onrender.com |
+| Mục đích | Link |
+|----------|------|
+| **Auth – health** | http://localhost:3001/health |
+| **Auth – API** | http://localhost:3001 |
+| **People – health** | http://localhost:3012/health |
+| **People – API** | http://localhost:3012 |
+| **Admin UI** (nếu dùng) | http://127.0.0.1:3000/admin-ui/index.html hoặc mở file `admin-ui/index.html` |
 
-Chi tiết từng bước nằm ở phần [Getting Started](#-getting-started) và [Demo Validation](#-demo-validation-ui--microservices) bên dưới.
+### Option A – Chỉ cần test UI (khi services đã chạy)
+
+1. Đảm bảo Auth + People đang chạy (bước 3, 4 ở trên).
+2. Mở **Admin UI**: http://127.0.0.1:3000/admin-ui/index.html (hoặc double-click `admin-ui/index.html`).
+3. **Register** (email + password) → **Login** → thử **Create Person**, **Create Case**, **Search Cases**.
+
+### Option B – Chạy thêm Case service (full)
+
+Sau khi Auth + People chạy, mở terminal 3:
+```bash
+cd microservices
+npm run dev:case
+```
+Case chạy port **3003**. Link: http://localhost:3003/health.
+
+### Link theo môi trường
+
+| Môi trường | Auth | People | Case | Admin UI |
+|------------|------|--------|------|----------|
+| **Local** | http://localhost:3001/health | http://localhost:3012/health | http://localhost:3003/health | admin-ui/index.html |
+| **Render** | https://&lt;auth-service&gt;.onrender.com | https://&lt;people-service&gt;.onrender.com | https://&lt;case-service&gt;.onrender.com | (deploy static) |
+
+Chi tiết từng bước: [Getting Started](#-getting-started). Hướng dẫn chỉ chạy xem nhanh: `docs/LOCAL_VIEW.md`.
 
 ---
 
@@ -49,7 +76,7 @@ Chi tiết từng bước nằm ở phần [Getting Started](#-getting-started) 
              │              │              │
     ┌────────▼──────┐  ┌───▼──────────┐  ┌▼───────────────┐
     │ Auth Service  │  │People Service│  │ Case Service   │
-    │  Port: 3101   │  │ Port: 3002   │  │  Port: 3003    │
+    │  Port: 3001   │  │ Port: 3012   │  │  Port: 3003    │
     │               │  │              │  │                │
     │ - JWT Auth    │  │ - CRUD       │  │ - CRUD         │
     │ - Register    │  │ - Redis Cache│  │ - ES Search    │
@@ -71,13 +98,13 @@ Chi tiết từng bước nằm ở phần [Getting Started](#-getting-started) 
 
 ## 🎯 Main Components
 
-### 1. **Auth Service** (Port 3101)
+### 1. **Auth Service** (Port 3001)
 - **Context**: User authentication and authorization
 - **Action**: JWT authentication, register, login, profile management
 - **Result**: Stateless authentication, easy to scale
 - **Metrics**: 401 rate, token refresh success rate
 
-### 2. **People Service** (Port 3002)
+### 2. **People Service** (Port 3012*)
 - **Context**: People management (CRUD operations)
 - **Action**: 
   - CRUD operations
@@ -194,31 +221,35 @@ cp services/case-service/.env.example services/case-service/.env
 npm run build --workspace=shared
 ```
 
-### Step 5: Start Services (recommended local demo mode)
+### Step 5: Start Services (chạy local)
 
-Open 3 separate terminals:
+Từ thư mục gốc **d:\\microservices** (sau khi đã `npm install` và `npm run docker:up`):
 
-**Terminal 1 - Auth Service (Port 3101):**
+**Terminal 1 – Auth (port 3001):**
 ```bash
-# Folder: d:\microservices\services\auth-service
-npx ts-node src/index.ts
+cd d:\microservices
+npm run dev:auth
 ```
 
-**Terminal 2 - People Service (Port 3002):**
+**Terminal 2 – People (port 3012):**
 ```bash
-# Folder: d:\microservices\services\people-service
-npx ts-node src/index.ts
+cd d:\microservices
+npm run dev:people
 ```
 
-**Terminal 3 - Case Service (Port 3003):**
+**Terminal 3 – Case (port 3003, tùy chọn):**
 ```bash
-# Folder: d:\microservices\services\case-service
-npx ts-node src/index.ts
+cd d:\microservices
+npm run dev:case
 ```
+
+Link xem nhanh: [Link local cho user](#link-local-cho-user-sau-khi-chạy-các-bước-trên) (Auth: 3001, People: 3012, Case: 3003).
+
+\* People dùng port 3012 trong script dev để tránh trùng port; có thể đổi lại 3002 trong `services/people-service/package.json` nếu port 3002 trống.
 
 ## 📡 API Endpoints
 
-### Auth Service (http://localhost:3101)
+### Auth Service (http://localhost:3001)
 
 #### Register
 ```bash
@@ -251,7 +282,7 @@ GET /api/auth/profile
 Authorization: Bearer <jwt-token>
 ```
 
-### People Service (http://localhost:3002)
+### People Service (http://localhost:3012)
 
 #### Create Person
 ```bash
@@ -509,14 +540,10 @@ npm run docker:logs     # View logs
 
 ### Development
 ```bash
-# Folder: d:\microservices\services\auth-service
-npx ts-node src/index.ts
-
-# Folder: d:\microservices\services\people-service
-npx ts-node src/index.ts
-
-# Folder: d:\microservices\services\case-service
-npx ts-node src/index.ts
+# Từ thư mục gốc d:\microservices
+npm run dev:auth    # Auth → http://localhost:3001
+npm run dev:people  # People → http://localhost:3012
+npm run dev:case    # Case → http://localhost:3003
 ```
 
 ### Build & Test
